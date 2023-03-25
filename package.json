@@ -1,6 +1,6 @@
 {
   "name": "liveread",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "Token Meet Live Read Smart Contract on Bitcoin",
   "main": "./dist/src/contracts/liveread",
   "author": "",
