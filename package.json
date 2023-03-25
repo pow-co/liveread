@@ -1,7 +1,7 @@
 {
   "name": "liveread",
-  "version": "0.1.0",
-  "description": "A demo sCrypt smart contract.",
+  "version": "0.3.0",
+  "description": "Token Meet Live Read Smart Contract on Bitcoin",
   "author": "",
   "scripts": {
     "prebuild": "npm run clean",
