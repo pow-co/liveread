@@ -18,7 +18,7 @@ async function main() {
 
     const sponsor = PubKey(toHex(sponsorPubKey))
     const instance = new Liveread(
-        sha256(toByteString('hello world', true)),
+        toByteString('hello world', true),
         PubKey(toHex(hostPubKey)),
         PubKey(toHex(sponsorPubKey))
     )

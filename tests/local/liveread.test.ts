@@ -33,7 +33,7 @@ describe('Test SmartContract `Liveread`', () => {
 
         const sponsor = PubKey(toHex(sponsorPubKey))
         instance = new Liveread(
-            sha256(toByteString('hello world', true)),
+            toByteString('hello world', true),
             PubKey(toHex(hostPubKey)),
             PubKey(toHex(sponsorPubKey))
         )
@@ -69,6 +69,6 @@ describe('Test SmartContract `Liveread`', () => {
             instance.methods.accept(toByteString('wrong message', true), {
                 fromUTXO: getDummyUTXO(),
             } as MethodCallOptions<Liveread>)
-        ).to.be.rejectedWith(/Hash does not match/)
+        ).to.be.rejectedWith(/Please agree to terms of the contract/)
     })
 })

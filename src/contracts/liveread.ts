@@ -4,14 +4,13 @@ import {
     method,
     prop,
     PubKey,
-    sha256,
-    Sha256,
     SmartContract,
+    toByteString,
 } from 'scrypt-ts'
 
 export class Liveread extends SmartContract {
     @prop()
-    hash: Sha256
+    commentary: ByteString
 
     @prop()
     host: PubKey
@@ -19,20 +18,30 @@ export class Liveread extends SmartContract {
     @prop()
     sponsor: PubKey
 
-    constructor(hash: Sha256, host: PubKey, sponsor: PubKey) {
+    @prop()
+    terms: ByteString
+
+    constructor(commentary: ByteString, host: PubKey, sponsor: PubKey) {
         super(...arguments)
-        this.hash = hash
+        this.commentary = commentary
         this.host = host
         this.sponsor = sponsor
+        this.terms = toByteString(
+            'I agree to read the commentary contained herein live on air.',
+            true
+        )
     }
 
     @method()
     public cancel(message: ByteString) {
-        assert(sha256(message) == this.hash, 'Hash does not match')
+        assert(true)
     }
 
     @method()
     public accept(message: ByteString) {
-        assert(sha256(message) == this.hash, 'Hash does not match')
+        assert(
+            message == this.commentary,
+            'Please agree to terms of the contract'
+        )
     }
 }
