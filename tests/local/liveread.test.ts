@@ -2,7 +2,9 @@ import { expect, use } from 'chai'
 import {
     MethodCallOptions,
     PubKey,
+    SignatureResponse,
     bsv,
+    findSig,
     sha256,
     toByteString,
     toHex,
@@ -10,6 +12,7 @@ import {
 import { Liveread } from '../../src/contracts/liveread'
 import { getDummySigner, getDummyUTXO } from './utils/txHelper'
 import chaiAsPromised from 'chai-as-promised'
+import { getDefaultSigner } from '../testnet/utils/txHelper'
 use(chaiAsPromised)
 
 export function randomPrivateKey() {
@@ -22,6 +25,8 @@ export function randomPrivateKey() {
 
 describe('Test SmartContract `Liveread`', () => {
     let instance: Liveread
+    let host: PubKey
+    let sponsor: PubKey
 
     before(async () => {
         await Liveread.compile()
@@ -29,22 +34,29 @@ describe('Test SmartContract `Liveread`', () => {
         const [hostPrivKey, hostPubKey] = randomPrivateKey()
         const [sponsorPrivKey, sponsorPubKey] = randomPrivateKey()
 
-        const host = PubKey(toHex(hostPubKey))
+        host = PubKey(toHex(hostPubKey))
+        sponsor = PubKey(toHex(sponsorPubKey))
 
-        const sponsor = PubKey(toHex(sponsorPubKey))
         instance = new Liveread(
             toByteString('hello world', true),
             PubKey(toHex(hostPubKey)),
             PubKey(toHex(sponsorPubKey))
         )
-        await instance.connect(getDummySigner())
+        await instance.connect(getDummySigner([hostPrivKey, sponsorPrivKey]))
     })
 
     it('The show host should accept the offer and agree to read the message', async () => {
         const { tx: callTx, atInputIndex } = await instance.methods.accept(
-            toByteString('hello world', true),
+            toByteString(
+                'I agree to read the `commentary` contained herein live on air.',
+                true
+            ),
+            (sigResponses: SignatureResponse[]) => {
+                return findSig(sigResponses, bsv.PublicKey.fromString(host))
+            },
             {
                 fromUTXO: getDummyUTXO(),
+                pubKeyOrAddrToSign: bsv.PublicKey.fromString(host),
             } as MethodCallOptions<Liveread>
         )
 
@@ -54,9 +66,12 @@ describe('Test SmartContract `Liveread`', () => {
 
     it('The sponsor should be able to cancel', async () => {
         const { tx: callTx, atInputIndex } = await instance.methods.cancel(
-            toByteString('hello world', true),
+            (sigResponses: SignatureResponse[]) => {
+                return findSig(sigResponses, bsv.PublicKey.fromString(sponsor))
+            },
             {
                 fromUTXO: getDummyUTXO(),
+                pubKeyOrAddrToSign: bsv.PublicKey.fromString(sponsor),
             } as MethodCallOptions<Liveread>
         )
 
@@ -66,9 +81,16 @@ describe('Test SmartContract `Liveread`', () => {
 
     it('should throw with wrong message.', async () => {
         return expect(
-            instance.methods.accept(toByteString('wrong message', true), {
-                fromUTXO: getDummyUTXO(),
-            } as MethodCallOptions<Liveread>)
+            instance.methods.accept(
+                toByteString('wrong message', true),
+                (sigResponses: SignatureResponse[]) => {
+                    return findSig(sigResponses, bsv.PublicKey.fromString(host))
+                },
+                {
+                    fromUTXO: getDummyUTXO(),
+                    pubKeyOrAddrToSign: bsv.PublicKey.fromString(host),
+                } as MethodCallOptions<Liveread>
+            )
         ).to.be.rejectedWith(/Please agree to terms of the contract/)
     })
 })
