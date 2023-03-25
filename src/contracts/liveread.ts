@@ -3,6 +3,7 @@ import {
     ByteString,
     method,
     prop,
+    PubKey,
     sha256,
     Sha256,
     SmartContract,
@@ -12,9 +13,17 @@ export class Liveread extends SmartContract {
     @prop()
     hash: Sha256
 
-    constructor(hash: Sha256) {
+    @prop()
+    host: PubKey
+
+    @prop()
+    sponsor: PubKey
+
+    constructor(hash: Sha256, host: PubKey, sponsor: PubKey) {
         super(...arguments)
         this.hash = hash
+        this.host = host
+        this.sponsor = sponsor
     }
 
     @method()

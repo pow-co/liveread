@@ -1,12 +1,27 @@
 import { Liveread } from '../../src/contracts/liveread'
-import { getDefaultSigner, inputSatoshis } from './utils/txHelper'
-import { toByteString, sha256 } from 'scrypt-ts'
+import {
+    getDefaultSigner,
+    inputSatoshis,
+    randomPrivateKey,
+} from './utils/txHelper'
+import { toByteString, sha256, toHex, PubKey } from 'scrypt-ts'
 
 const message = 'hello world, sCrypt!'
 
 async function main() {
     await Liveread.compile()
-    const instance = new Liveread(sha256(toByteString(message, true)))
+
+    const [hostPrivKey, hostPubKey] = randomPrivateKey()
+    const [sponsorPrivKey, sponsorPubKey] = randomPrivateKey()
+
+    const host = PubKey(toHex(hostPubKey))
+
+    const sponsor = PubKey(toHex(sponsorPubKey))
+    const instance = new Liveread(
+        sha256(toByteString('hello world', true)),
+        PubKey(toHex(hostPubKey)),
+        PubKey(toHex(sponsorPubKey))
+    )
 
     // connect to a signer
     await instance.connect(getDefaultSigner())

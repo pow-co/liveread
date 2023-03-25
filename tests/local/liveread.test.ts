@@ -1,16 +1,42 @@
 import { expect, use } from 'chai'
-import { MethodCallOptions, sha256, toByteString } from 'scrypt-ts'
+import {
+    MethodCallOptions,
+    PubKey,
+    bsv,
+    sha256,
+    toByteString,
+    toHex,
+} from 'scrypt-ts'
 import { Liveread } from '../../src/contracts/liveread'
 import { getDummySigner, getDummyUTXO } from './utils/txHelper'
 import chaiAsPromised from 'chai-as-promised'
 use(chaiAsPromised)
+
+export function randomPrivateKey() {
+    const privateKey = bsv.PrivateKey.fromRandom('testnet')
+    const publicKey = bsv.PublicKey.fromPrivateKey(privateKey)
+    const publicKeyHash = bsv.crypto.Hash.sha256ripemd160(publicKey.toBuffer())
+    const address = publicKey.toAddress()
+    return [privateKey, publicKey, publicKeyHash, address] as const
+}
 
 describe('Test SmartContract `Liveread`', () => {
     let instance: Liveread
 
     before(async () => {
         await Liveread.compile()
-        instance = new Liveread(sha256(toByteString('hello world', true)))
+
+        const [hostPrivKey, hostPubKey] = randomPrivateKey()
+        const [sponsorPrivKey, sponsorPubKey] = randomPrivateKey()
+
+        const host = PubKey(toHex(hostPubKey))
+
+        const sponsor = PubKey(toHex(sponsorPubKey))
+        instance = new Liveread(
+            sha256(toByteString('hello world', true)),
+            PubKey(toHex(hostPubKey)),
+            PubKey(toHex(sponsorPubKey))
+        )
         await instance.connect(getDummySigner())
     })
 
