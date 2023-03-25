@@ -1,7 +1,8 @@
 {
   "name": "liveread",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Token Meet Live Read Smart Contract on Bitcoin",
+  "main": "./dist/src/contracts/liveread",
   "author": "",
   "scripts": {
     "prebuild": "npm run clean",
